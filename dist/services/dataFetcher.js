@@ -1,74 +1,69 @@
 import { gotScraping } from 'got-scraping';
 import { CookieJar } from 'tough-cookie';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const cookiesArray = [
-    {
-        "name": "cf_clearance",
-        "value": "Z8.wwmZqUEiEaCbxYrZ6KEdeSIO4DSGpD8m_CQGp1qc-1752605874-1.2.1.1-feRaYpWKWRaP26LnmPHPn8vVbJr7niG4W10MeGoiyJOL5drtX2THF25tf0AQ9FtsTgtqUbIZZa2D6rhSwGMuj15wOHqRuKT6aQu_SoXgF.50GIP4.tWxEQ5cDeuVMQ7thRr3cq5bCcz8REZDNxf1JtEZQC1GjLhaWEqI.QMAD.XHZEijKFcSEalBPYR_jMg2uB3wFXQYsUNBwiIxZ1rsI1O_OC22FYGME2r7uO5yHEE",
-        "domain": ".samehadaku.now",
-    },
-];
-const cookieJar = new CookieJar();
-Promise.all(cookiesArray.map((cookie) => {
-    const url = `https://${cookie.domain.replace(/^\./, '')}`;
-    return cookieJar.setCookie(`${cookie.name}=${cookie.value}`, url);
-}));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+function getLatestCredentials() {
+    const credsPath = path.resolve(__dirname, '..', 'credentials.json');
+    if (!fs.existsSync(credsPath)) {
+        throw new Error('File credentials.json tidak ditemukan di dalam folder src!');
+    }
+    const rawData = fs.readFileSync(credsPath, 'utf-8');
+    return JSON.parse(rawData);
+}
+async function _internalFetch(url, ref, options) {
+    const { userAgent, cfCookie } = getLatestCredentials();
+    if (!userAgent || !cfCookie || userAgent.includes('GANTI_DENGAN') || cfCookie.includes('GANTI_DENGAN')) {
+        throw new Error('Harap isi userAgent dan cfCookie yang valid di dalam src/credentials.json');
+    }
+    const retries = 3;
+    let lastError = null;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const cookieJar = new CookieJar();
+            const targetDomain = new URL(url).hostname;
+            await cookieJar.setCookie(`cf_clearance=${cfCookie}`, `https://${targetDomain}`);
+            const response = await gotScraping(url, {
+                cookieJar,
+                http2: true,
+                headerGeneratorOptions: {
+                    browsers: [{ name: 'chrome' }],
+                    operatingSystems: ['windows'],
+                },
+                ...options,
+                headers: {
+                    'User-Agent': userAgent,
+                    'Referer': ref,
+                    ...options?.headers,
+                }
+            });
+            if (response.statusCode === 200 && !response.body.includes('Just a moment')) {
+                return response;
+            }
+            lastError = new Error(`Kena challenge Cloudflare di percobaan ke-${attempt}`);
+        }
+        catch (error) {
+            lastError = error;
+        }
+        if (attempt < retries)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    throw new Error(`Gagal fetch setelah ${retries} percobaan. Error: ${lastError?.message}`);
+}
 export async function belloFetch(url, ref, options) {
-    const response = await gotScraping({
-        url,
-        ...options,
-        cookieJar,
-        headers: {
-            'Referer': ref,
-            ...options?.headers,
-        },
-    });
+    const response = await _internalFetch(url, ref, options);
     return response.body;
 }
 export async function getFinalUrl(url, ref, options) {
-    try {
-        const response = await gotScraping({
-            method: 'HEAD',
-            url,
-            ...options,
-            cookieJar,
-            headers: {
-                'Referer': ref,
-                ...options?.headers,
-            },
-            followRedirect: false,
-            throwHttpErrors: false,
-        });
-        return response.headers.location || url;
-    }
-    catch (error) {
-        console.error(`Error getting final URL for ${url}:`, error);
-        return url;
-    }
+    const response = await _internalFetch(url, ref, {
+        ...options,
+        method: 'HEAD'
+    });
+    return response.url;
 }
 export async function getFinalUrls(urls, ref, config) {
-    const { retries = 3, delay = 1000 } = config.retryConfig || {};
-    const retryRequest = async (url) => {
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                return await getFinalUrl(url, ref, config.options);
-            }
-            catch (error) {
-                if (attempt === retries)
-                    throw error;
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
-        }
-        return '';
-    };
-    const requests = urls.map((url) => retryRequest(url));
-    const responses = await Promise.allSettled(requests);
-    return responses.map((response) => {
-        if (response.status === 'fulfilled') {
-            return response.value;
-        }
-        return '';
-    });
+    const promises = urls.map(url => getFinalUrl(url, ref, config.options).catch(() => url));
+    return Promise.all(promises);
 }

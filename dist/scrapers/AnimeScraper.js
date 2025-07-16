@@ -1,8 +1,8 @@
 import { load } from "cheerio";
-import { belloFetch } from "../services/dataFetcher.js";
-import animeConfig from "../configs/animeConfig.js";
+import { belloFetch } from "@services/dataFetcher.js";
+import animeConfig from "@configs/animeConfig.js";
 import path from "path";
-import { setResponseError } from "../helpers/error.js";
+import { setResponseError } from "@helpers/error.js";
 export default class AnimeScraper {
     baseUrl;
     baseUrlPath;

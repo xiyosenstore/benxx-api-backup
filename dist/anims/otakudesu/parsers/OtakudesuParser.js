@@ -1,5 +1,5 @@
-import { belloFetch } from "../../../services/dataFetcher.js";
-import { cache } from "../../../libs/lruCache.js";
+import { belloFetch } from "@services/dataFetcher.js";
+import { cache } from "@libs/lruCache.js";
 import OtakudesuParserExtra from "./OtakudesuParserExtra.js";
 export default class OtakudesuParser extends OtakudesuParserExtra {
     parseHome() {

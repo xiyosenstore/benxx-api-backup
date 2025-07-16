@@ -1,5 +1,5 @@
-import { serverCache } from "../../../middlewares/cache.js";
-import controller from "../controllers/otakudesuController.js";
+import { serverCache } from "@middlewares/cache.js";
+import controller from "@otakudesu/controllers/otakudesuController.js";
 import express from "express";
 const otakudesuRoute = express.Router();
 otakudesuRoute

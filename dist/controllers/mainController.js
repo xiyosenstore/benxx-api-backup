@@ -1,7 +1,7 @@
-import { setResponseError } from "../helpers/error.js";
-import { otakudesuInfo } from "../anims/otakudesu/index.js";
-import { samehadakuInfo } from "../anims/samehadaku/index.js";
-import generatePayload from "../helpers/payload.js";
+import { setResponseError } from "@helpers/error.js";
+import { otakudesuInfo } from "@otakudesu/index.js";
+import { samehadakuInfo } from "@samehadaku/index.js";
+import generatePayload from "@helpers/payload.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from 'url';

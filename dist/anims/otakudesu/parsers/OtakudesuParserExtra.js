@@ -1,5 +1,5 @@
-import { getFinalUrl, getFinalUrls } from "../../../services/dataFetcher.js";
-import AnimeScraper from "../../../scrapers/AnimeScraper.js";
+import { getFinalUrl, getFinalUrls } from "@services/dataFetcher.js";
+import AnimeScraper from "@scrapers/AnimeScraper.js";
 import { Options } from "got-scraping";
 export default class OtakudesuParserExtra extends AnimeScraper {
     parseAnimeCard1(el) {

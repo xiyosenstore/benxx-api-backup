@@ -1,4 +1,4 @@
-import AnimeScraper from "../../../scrapers/AnimeScraper.js";
+import AnimeScraper from "@scrapers/AnimeScraper.js";
 export default class SamehadakuParserExtra extends AnimeScraper {
     parseAnimeCard1(el, to) {
         const data = {

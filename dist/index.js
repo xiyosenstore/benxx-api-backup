@@ -1,9 +1,9 @@
-import { clientCache } from "./middlewares/cache.js";
-import { otakudesuInfo, otakudesuRoute } from "./anims/otakudesu/index.js";
-import { samehadakuInfo, samehadakuRoute } from "./anims/samehadaku/index.js";
-import mainRoute from "./routes/mainRoute.js";
-import errorHandler from "./middlewares/errorHandler.js";
-import animeConfig from "./configs/animeConfig.js";
+import { clientCache } from "@middlewares/cache.js";
+import { otakudesuInfo, otakudesuRoute } from "@otakudesu/index.js";
+import { samehadakuInfo, samehadakuRoute } from "@samehadaku/index.js";
+import mainRoute from "@routes/mainRoute.js";
+import errorHandler from "@middlewares/errorHandler.js";
+import animeConfig from "@configs/animeConfig.js";
 import path from "path";
 import express from "express";
 import cors from "cors";
