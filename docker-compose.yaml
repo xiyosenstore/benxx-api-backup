@@ -1,0 +1,11 @@
+services:
+  bellonime-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bellonime-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
