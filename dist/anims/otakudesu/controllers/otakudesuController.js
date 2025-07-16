@@ -3,6 +3,8 @@ import OtakudesuParser from "../parsers/OtakudesuParser.js";
 import otakudesuInfo from "../info/otakudesuInfo.js";
 import generatePayload from "../../../helpers/payload.js";
 import path from "path";
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { baseUrl, baseUrlPath } = otakudesuInfo;
 const parser = new OtakudesuParser(baseUrl, baseUrlPath);
 const otakudesuController = {

@@ -4,6 +4,9 @@ import SamehadakuParser from "@samehadaku/parsers/SamehadakuParser.js";
 import samehadakuInfo from "@samehadaku/info/samehadakuInfo.js";
 import generatePayload from "@helpers/payload.js";
 import path from "path";
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const { baseUrl, baseUrlPath } = samehadakuInfo;
 const parser = new SamehadakuParser(baseUrl, baseUrlPath);
