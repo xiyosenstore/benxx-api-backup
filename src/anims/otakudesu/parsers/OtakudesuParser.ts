@@ -427,7 +427,7 @@ export default class OtakudesuParser extends OtakudesuParserExtra {
           const nonce = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
             method: "POST",
             responseType: "json",
-            form: new URLSearchParams({
+            form: ({
               action: this.derawr("ff675Di7Ck7Ehf895hE7hBBi6E7Bk68k"),
             }),
           } as unknown as Options);
@@ -563,7 +563,7 @@ export default class OtakudesuParser extends OtakudesuParserExtra {
       return await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
         method: "POST",
         responseType: "json",
-        form: new URLSearchParams({
+        form: ({
           id: serverIdArr[0],
           i: serverIdArr[1],
           q: serverIdArr[2],
@@ -591,7 +591,7 @@ export default class OtakudesuParser extends OtakudesuParserExtra {
         const nonce = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
           method: "POST",
           responseType: "json",
-          form: new URLSearchParams({
+          form: ({
             action: this.derawr("ff675Di7Ck7Ehf895hE7hBBi6E7Bk68k"),
           }),
         } as unknown as Options);

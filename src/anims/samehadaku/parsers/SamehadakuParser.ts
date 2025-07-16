@@ -439,7 +439,7 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
           const result = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
             method: "POST",
             responseType: "text",
-            form: new URLSearchParams({ // 'data' diubah menjadi 'form'
+            form: ({ // 'data' diubah menjadi 'form'
               action: "player_ajax",
               post: this.str(postData),
               nume: this.str(numeData),
@@ -630,7 +630,7 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
       {
         method: "POST",
         responseType: "text",
-        form: new URLSearchParams({ // 'data' diubah menjadi 'form'
+        form: ({ // 'data' diubah menjadi 'form'
           action: "player_ajax",
           post: post || "",
           nume: nume || "",
