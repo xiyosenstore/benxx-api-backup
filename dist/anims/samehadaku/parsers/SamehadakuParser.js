@@ -1,5 +1,5 @@
-import { belloFetch } from "@services/dataFetcher.js";
-import { setResponseError } from "@helpers/error.js";
+import { belloFetch } from "../../../services/dataFetcher.js";
+import { setResponseError } from "../../../helpers/error.js";
 import SamehadakuParserExtra from "./SamehadakuParserExtra.js";
 import path from "path";
 export default class SamehadakuParser extends SamehadakuParserExtra {
@@ -230,6 +230,20 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
             },
         }, async ($, data) => {
             const info = this.parseDetails($);
+            const batchElements = $(".listbatch a").toArray();
+            batchElements.forEach((batchElement) => {
+                const oriUrl = $(batchElement).attr("href");
+                const title = $(batchElement).text().trim();
+                const samehadakuUrl = this.generateSourceUrl(oriUrl);
+                const batchId = this.generateSlug(oriUrl);
+                const href = this.generateHref("batch", batchId);
+                data.batchList.push({
+                    title,
+                    batchId,
+                    href,
+                    samehadakuUrl,
+                });
+            });
             const genreElements = $(".genre-info a").toArray();
             genreElements.forEach((genreElement) => {
                 const card = this.parseLinkCard($(genreElement), "genres");

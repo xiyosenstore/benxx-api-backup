@@ -1,5 +1,5 @@
-import * as par from "@helpers/paramsView.js";
-import animeConfig from "@configs/animeConfig.js";
+import * as par from "../../../helpers/paramsView.js";
+import animeConfig from "../../../configs/animeConfig.js";
 const { baseUrl } = animeConfig;
 const otakudesuInfo = {
     title: "Otakudesu",

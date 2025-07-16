@@ -1,5 +1,5 @@
-import { getFinalUrl, getFinalUrls } from "@services/dataFetcher.js";
-import AnimeScraper from "@scrapers/AnimeScraper.js";
+import { getFinalUrl, getFinalUrls } from "../../../services/dataFetcher.js";
+import AnimeScraper from "../../../scrapers/AnimeScraper.js";
 import { Options } from "got-scraping";
 export default class OtakudesuParserExtra extends AnimeScraper {
     parseAnimeCard1(el) {
@@ -166,7 +166,6 @@ export default class OtakudesuParserExtra extends AnimeScraper {
                         }
                         const originalUrls = await getFinalUrls(otakudesuUrls, this.baseUrl, {
                             options: new Options({ timeout: { request: 10000 } }),
-                            retryConfig: { delay: 100, retries: 2 },
                         });
                         const finalConnections = [];
                         for (let k = 0; k < originalUrls.length; k++) {

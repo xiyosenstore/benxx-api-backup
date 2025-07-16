@@ -1,7 +1,7 @@
-import { getPageParam, getQParam } from "@helpers/queryParams.js";
-import OtakudesuParser from "@otakudesu/parsers/OtakudesuParser.js";
-import otakudesuInfo from "@otakudesu/info/otakudesuInfo.js";
-import generatePayload from "@helpers/payload.js";
+import { getPageParam, getQParam } from "../../../helpers/queryParams.js";
+import OtakudesuParser from "../parsers/OtakudesuParser.js";
+import otakudesuInfo from "../info/otakudesuInfo.js";
+import generatePayload from "../../../helpers/payload.js";
 import path from "path";
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

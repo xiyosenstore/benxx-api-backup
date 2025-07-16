@@ -1,5 +1,5 @@
-import { belloFetch } from "@services/dataFetcher.js";
-import { cache } from "@libs/lruCache.js";
+import { belloFetch } from "../../../services/dataFetcher.js";
+import { cache } from "../../../libs/lruCache.js";
 import OtakudesuParserExtra from "./OtakudesuParserExtra.js";
 export default class OtakudesuParser extends OtakudesuParserExtra {
     parseHome() {
@@ -308,13 +308,14 @@ export default class OtakudesuParser extends OtakudesuParserExtra {
             const serverElements = $(".mirrorstream ul").toArray();
             const nonceCacheKey = "otakudesuNonce";
             if (!cache.get(nonceCacheKey)) {
-                const nonce = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
+                const nonceResponse = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
                     method: "POST",
                     responseType: "json",
-                    form: ({
+                    form: {
                         action: this.derawr("ff675Di7Ck7Ehf895hE7hBBi6E7Bk68k"),
-                    }),
+                    },
                 });
+                const nonce = JSON.parse(nonceResponse);
                 if (nonce?.data)
                     cache.set(nonceCacheKey, nonce.data);
             }
@@ -419,17 +420,18 @@ export default class OtakudesuParser extends OtakudesuParserExtra {
         const nonceCacheKey = "otakudesuNonce";
         const serverIdArr = this.derawr(serverId).split("-");
         const getUrlData = async (nonce) => {
-            return await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
+            const responseBody = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
                 method: "POST",
                 responseType: "json",
-                form: ({
+                form: {
                     id: serverIdArr[0],
                     i: serverIdArr[1],
                     q: serverIdArr[2],
                     action: this.derawr("7f8A5AhE8g558Ai8k9AAikD7gkECBgD9"),
                     nonce: nonce,
-                }),
+                },
             });
+            return JSON.parse(responseBody);
         };
         const getHtml = (base64) => {
             return Buffer.from(base64, "base64").toString();
@@ -437,22 +439,23 @@ export default class OtakudesuParser extends OtakudesuParserExtra {
         const getUrl = (html) => this.generateSrcFromIframeTag(html);
         try {
             const nonce = cache.get(nonceCacheKey);
-            const url = await getUrlData(nonce);
-            data.url = getUrl(getHtml(url.data));
+            const urlData = await getUrlData(nonce);
+            data.url = getUrl(getHtml(urlData.data));
         }
         catch (error) {
             if (error.status === 403) {
-                const nonce = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
+                const nonceResponse = await belloFetch(`${this.baseUrl}/wp-admin/admin-ajax.php`, this.baseUrl, {
                     method: "POST",
                     responseType: "json",
-                    form: ({
+                    form: {
                         action: this.derawr("ff675Di7Ck7Ehf895hE7hBBi6E7Bk68k"),
-                    }),
+                    },
                 });
-                if (nonce?.data) {
-                    cache.set(nonceCacheKey, nonce.data);
-                    const response = await getUrlData(nonce.data);
-                    data.url = getUrl(getHtml(response.data));
+                const nonceData = JSON.parse(nonceResponse);
+                if (nonceData?.data) {
+                    cache.set(nonceCacheKey, nonceData.data);
+                    const responseData = await getUrlData(nonceData.data);
+                    data.url = getUrl(getHtml(responseData.data));
                 }
             }
             else {

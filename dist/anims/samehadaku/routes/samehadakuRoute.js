@@ -1,5 +1,5 @@
-import { serverCache } from "@middlewares/cache.js";
-import controller from "@samehadaku/controllers/samehadakuController.js";
+import { serverCache } from "../../../middlewares/cache.js";
+import controller from "../controllers/samehadakuController.js";
 import express from "express";
 const samehadakuRoute = express.Router();
 samehadakuRoute
