@@ -32,3 +32,4 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`SERVER BERJALAN DI http://localhost:${PORT}`);
 });
+ 
