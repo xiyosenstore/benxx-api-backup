@@ -1,3 +1,4 @@
+// dataFetcher.ts
 import { gotScraping, Options } from 'got-scraping';
 import { CookieJar } from 'tough-cookie';
 import fs from 'fs';
@@ -16,9 +17,16 @@ function getLatestCredentials(): { userAgent: string; cfCookie: string } {
   return JSON.parse(rawData);
 }
 
+function normalizeBody(body: unknown): string {
+  if (typeof body === 'string') return body;
+  if (Buffer.isBuffer(body)) return body.toString('utf-8');
+  if (typeof body === 'object') return JSON.stringify(body);
+  return String(body);
+}
+
 async function _internalFetch(url: string, ref: string, options?: Options) {
   const { userAgent, cfCookie } = getLatestCredentials();
-  
+
   if (!userAgent || !cfCookie || userAgent.includes('GANTI_DENGAN') || cfCookie.includes('GANTI_DENGAN')) {
     throw new Error('Harap isi userAgent dan cfCookie yang valid di dalam src/credentials.json');
   }
@@ -44,14 +52,21 @@ async function _internalFetch(url: string, ref: string, options?: Options) {
           'User-Agent': userAgent,
           'Referer': ref,
           ...options?.headers,
-        }
+        },
       });
 
-      if (response.statusCode === 200 && !response.body.includes('Just a moment')) {
-        return response;
+      const body = normalizeBody(response.body);
+      console.debug(`[DEBUG] Response body (first 300 chars):\n${body.slice(0, 300)}`);
+
+      if (response.statusCode === 200) {
+        if (body.includes('<title>Just a moment...</title>')) {
+          lastError = new Error(`Kena challenge Cloudflare di percobaan ke-${attempt}`);
+        } else {
+          return { ...response, body };
+        }
       }
-      lastError = new Error(`Kena challenge Cloudflare di percobaan ke-${attempt}`);
     } catch (error: any) {
+      console.debug(`[DEBUG] Error at attempt ${attempt}:`, error.message);
       lastError = error;
     }
     if (attempt < retries) await new Promise(resolve => setTimeout(resolve, 2000));
@@ -61,14 +76,15 @@ async function _internalFetch(url: string, ref: string, options?: Options) {
 
 export async function belloFetch(url: string, ref: string, options?: Options) {
   const response = await _internalFetch(url, ref, options);
+  console.debug('[DEBUG] Final response body before return:', response.body.slice(0, 300));
   return response.body;
 }
 
 export async function getFinalUrl(url: string, ref: string, options?: Options): Promise<string> {
-  const response = await _internalFetch(url, ref, { 
-    ...options, 
-    method: 'HEAD' 
-  } as unknown as Options); // <-- Perbaikan #2
+  const response = await _internalFetch(url, ref, {
+    ...options,
+    method: 'HEAD',
+  } as unknown as Options);
   return response.url;
 }
 

@@ -1,69 +1,81 @@
-import { gotScraping } from 'got-scraping';
-import { CookieJar } from 'tough-cookie';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-function getLatestCredentials() {
-    const credsPath = path.resolve(__dirname, '..', 'credentials.json');
-    if (!fs.existsSync(credsPath)) {
-        throw new Error('File credentials.json tidak ditemukan di dalam folder src!');
+import animeConfig from '../configs/animeConfig.js'; // pastikan path-nya sesuai
+
+async function _internalFetch(url, ref, options = {}) {
+  const { userAgent, cfCookie } = getLatestCredentials();
+  if (!userAgent || !cfCookie || userAgent.includes('GANTI_DENGAN') || cfCookie.includes('GANTI_DENGAN')) {
+    throw new Error('Harap isi userAgent dan cfCookie yang valid di dalam src/credentials.json');
+  }
+
+  const retries = 3;
+  let lastError = null;
+
+  const isCloudflareProtected = url.includes(new URL(animeConfig.baseUrl.samehadaku).hostname);
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const cookieJar = new CookieJar();
+      const targetDomain = new URL(url).hostname;
+      await cookieJar.setCookie(`cf_clearance=${cfCookie}`, `https://${targetDomain}`);
+
+      // Kalau bukan domain Cloudflare, langsung fetch biasa
+      if (!isCloudflareProtected) {
+        return await gotScraping(url, {
+          responseType: options.responseType || 'text',
+          cookieJar,
+          http2: true,
+          headerGeneratorOptions: options.headerGeneratorOptions,
+          headers: {
+            'User-Agent': userAgent,
+            'Referer': ref,
+            ...options.headers,
+          },
+          method: options.method,
+          body: options.form ? new URLSearchParams(options.form) : undefined,
+        });
+      }
+
+      // Untuk domain Cloudflare: challenge check dulu
+      const resCheck = await gotScraping(url, {
+        responseType: 'text',
+        cookieJar,
+        http2: true,
+        headerGeneratorOptions: options.headerGeneratorOptions,
+        headers: {
+          'User-Agent': userAgent,
+          'Referer': ref,
+          ...options.headers,
+        },
+        method: options.method,
+        body: options.form ? new URLSearchParams(options.form) : undefined,
+      });
+
+      const bodyText = typeof resCheck.body === 'string' ? resCheck.body : resCheck.body.toString();
+
+      if (resCheck.statusCode === 200 && !bodyText.includes('Just a moment')) {
+        return await gotScraping(url, {
+          responseType: options.responseType || 'text',
+          cookieJar,
+          http2: true,
+          headerGeneratorOptions: options.headerGeneratorOptions,
+          headers: {
+            'User-Agent': userAgent,
+            'Referer': ref,
+            ...options.headers,
+          },
+          method: options.method,
+          body: options.form ? new URLSearchParams(options.form) : undefined,
+        });
+      }
+
+      lastError = new Error(`Kena challenge Cloudflare di percobaan ke-${attempt}`);
+    } catch (error) {
+      lastError = error;
     }
-    const rawData = fs.readFileSync(credsPath, 'utf-8');
-    return JSON.parse(rawData);
-}
-async function _internalFetch(url, ref, options) {
-    const { userAgent, cfCookie } = getLatestCredentials();
-    if (!userAgent || !cfCookie || userAgent.includes('GANTI_DENGAN') || cfCookie.includes('GANTI_DENGAN')) {
-        throw new Error('Harap isi userAgent dan cfCookie yang valid di dalam src/credentials.json');
+
+    if (attempt < retries) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
-    const retries = 3;
-    let lastError = null;
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            const cookieJar = new CookieJar();
-            const targetDomain = new URL(url).hostname;
-            await cookieJar.setCookie(`cf_clearance=${cfCookie}`, `https://${targetDomain}`);
-            const response = await gotScraping(url, {
-                cookieJar,
-                http2: true,
-                headerGeneratorOptions: {
-                    browsers: [{ name: 'chrome' }],
-                    operatingSystems: ['windows'],
-                },
-                ...options,
-                headers: {
-                    'User-Agent': userAgent,
-                    'Referer': ref,
-                    ...options?.headers,
-                }
-            });
-            if (response.statusCode === 200 && !response.body.includes('Just a moment')) {
-                return response;
-            }
-            lastError = new Error(`Kena challenge Cloudflare di percobaan ke-${attempt}`);
-        }
-        catch (error) {
-            lastError = error;
-        }
-        if (attempt < retries)
-            await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-    throw new Error(`Gagal fetch setelah ${retries} percobaan. Error: ${lastError?.message}`);
-}
-export async function belloFetch(url, ref, options) {
-    const response = await _internalFetch(url, ref, options);
-    return response.body;
-}
-export async function getFinalUrl(url, ref, options) {
-    const response = await _internalFetch(url, ref, {
-        ...options,
-        method: 'HEAD'
-    });
-    return response.url;
-}
-export async function getFinalUrls(urls, ref, config) {
-    const promises = urls.map(url => getFinalUrl(url, ref, config.options).catch(() => url));
-    return Promise.all(promises);
+  }
+
+  throw new Error(`Gagal fetch setelah ${retries} percobaan. Error: ${lastError?.message}`);
 }
