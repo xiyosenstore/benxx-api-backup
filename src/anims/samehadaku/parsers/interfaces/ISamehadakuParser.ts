@@ -18,6 +18,11 @@ export interface Home {
     samehadakuUrl?: string;
     animeList: ISPE.AnimeCard3[];
   };
+  top10: {
+    href?: string;
+    samehadakuUrl?: string;
+    animeList: ISPE.AnimeCard1[];
+  };
 }
 
 export interface AllGenres {

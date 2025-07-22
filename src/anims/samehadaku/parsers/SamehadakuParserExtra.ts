@@ -295,4 +295,40 @@ export default class SamehadakuParserExtra extends AnimeScraper {
 
     return data;
   }
+  
+  protected parseTop10Card(el: Cheerio<Element>): ISPE.Top10AnimeCard {
+  const linkEl = el.find("a.series");
+
+  const oriUrl = linkEl.attr("href") || "";
+  const posterUrl = linkEl.find("img").attr("src") || "";
+  const rankText = linkEl.find(".is-topten").text().replace("TOP", "").trim();
+
+  const data: ISPE.Top10AnimeCard = {
+    rank: Number(rankText) || 0,
+    title: linkEl.find(".judul").text(),
+    poster: this.str(posterUrl) || "",
+    score: linkEl.find(".rating").text().trim(),
+    
+    // TAMBAHKAN FALLBACK DI SINI
+    animeId: this.generateSlug(oriUrl) || "",
+    href: this.generateHref("anime", this.generateSlug(oriUrl) || "") || "",
+    samehadakuUrl: this.generateSourceUrl(oriUrl) || "",
+  };
+
+  return data;
+}
+  public parseTop10List($: CheerioAPI): ISPE.Top10AnimeCard[] {
+    const animeList: ISPE.Top10AnimeCard[] = [];
+    
+    // Selector untuk menargetkan setiap item <li> di dalam widget Top 10
+    const animeElements = $(".widget_senction .topten-animesu ul li").toArray();
+
+    animeElements.forEach((animeElement) => {
+      // Panggil parser untuk satu kartu
+      const card = this.parseTop10Card($(animeElement));
+      animeList.push(card);
+    });
+
+    return animeList;
+  }
 }

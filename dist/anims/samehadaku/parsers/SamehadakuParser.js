@@ -10,6 +10,7 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
                 recent: { href: "", samehadakuUrl: "", animeList: [] },
                 batch: { href: "", samehadakuUrl: "", batchList: [] },
                 movie: { href: "", samehadakuUrl: "", animeList: [] },
+                top10: { href: "", samehadakuUrl: "", animeList: [] },
             },
         }, async ($, data) => {
             data.recent.href = this.generateHref("recent");
@@ -18,6 +19,8 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
             data.batch.samehadakuUrl = this.generateSourceUrl($(".widget-title h3 .linkwidget").attr("href"));
             data.movie.href = this.generateHref("movies");
             data.movie.samehadakuUrl = this.generateSourceUrl($(".widgets h3 .linkwidget").attr("href"));
+            data.top10.href = this.generateHref("top10");
+            data.top10.samehadakuUrl = this.generateSourceUrl("/");
             const animeWrapperElements = $(".post-show").toArray();
             animeWrapperElements.forEach((animeWrapperEl, index) => {
                 const animeElements = $(animeWrapperEl).find("ul li").toArray();
@@ -33,8 +36,10 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
                     data.movie.animeList.push(card);
                 }
             });
+            data.top10.animeList = this.parseTop10List($);
             const isEmpty = data.recent.animeList.length === 0 &&
                 data.batch.batchList.length === 0 &&
+                data.top10.animeList.length === 0 &&
                 data.movie.animeList.length === 0;
             this.checkEmptyData(isEmpty);
             return data;

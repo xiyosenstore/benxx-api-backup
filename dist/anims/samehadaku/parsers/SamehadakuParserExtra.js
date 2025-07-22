@@ -227,4 +227,29 @@ export default class SamehadakuParserExtra extends AnimeScraper {
         }
         return data;
     }
+    parseTop10Card(el) {
+        const linkEl = el.find("a.series");
+        const oriUrl = linkEl.attr("href") || "";
+        const posterUrl = linkEl.find("img").attr("src") || "";
+        const rankText = linkEl.find(".is-topten").text().replace("TOP", "").trim();
+        const data = {
+            rank: Number(rankText) || 0,
+            title: linkEl.find(".judul").text(),
+            poster: this.str(posterUrl) || "",
+            score: linkEl.find(".rating").text().trim(),
+            animeId: this.generateSlug(oriUrl) || "",
+            href: this.generateHref("anime", this.generateSlug(oriUrl) || "") || "",
+            samehadakuUrl: this.generateSourceUrl(oriUrl) || "",
+        };
+        return data;
+    }
+    parseTop10List($) {
+        const animeList = [];
+        const animeElements = $(".widget_senction .topten-animesu ul li").toArray();
+        animeElements.forEach((animeElement) => {
+            const card = this.parseTop10Card($(animeElement));
+            animeList.push(card);
+        });
+        return animeList;
+    }
 }

@@ -107,3 +107,13 @@ export interface Synopsis {
   paragraphs: string[];
   connections?: AnimeLinkCard[];
 }
+
+export interface Top10AnimeCard {
+  rank: number;
+  title: string;
+  poster: string;
+  score: string;
+  animeId: string;
+  href: string;
+  samehadakuUrl: string;
+}

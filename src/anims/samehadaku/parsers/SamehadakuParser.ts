@@ -17,6 +17,7 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
           recent: { href: "", samehadakuUrl: "", animeList: [] },
           batch: { href: "", samehadakuUrl: "", batchList: [] },
           movie: { href: "", samehadakuUrl: "", animeList: [] },
+          top10: { href: "", samehadakuUrl: "", animeList: [] },
         },
       },
       async ($, data) => {
@@ -34,6 +35,11 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
         data.movie.samehadakuUrl = this.generateSourceUrl(
           $(".widgets h3 .linkwidget").attr("href")
         );
+
+        // --- PERBAIKAN UNTUK TOP 10 ---
+        data.top10.href = this.generateHref("top10");
+        // Karena Top 10 adalah widget di homepage, URL aslinya adalah homepage itu sendiri.
+        data.top10.samehadakuUrl = this.generateSourceUrl("/");
 
         const animeWrapperElements = $(".post-show").toArray();
 
@@ -56,10 +62,13 @@ export default class SamehadakuParser extends SamehadakuParserExtra {
             data.movie.animeList.push(card);
           }
         });
+        
+        data.top10.animeList = this.parseTop10List($) as any;
 
         const isEmpty =
           data.recent.animeList.length === 0 &&
           data.batch.batchList.length === 0 &&
+          data.top10.animeList.length === 0 &&
           data.movie.animeList.length === 0;
 
         this.checkEmptyData(isEmpty);
