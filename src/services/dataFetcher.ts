@@ -56,7 +56,7 @@ async function _internalFetch(url: string, ref: string, options?: Options) {
       });
 
       const body = normalizeBody(response.body);
-      console.debug(`[DEBUG] Response body (first 300 chars):\n${body.slice(0, 300)}`);
+      
 
       if (response.statusCode === 200) {
         if (body.includes('<title>Just a moment...</title>')) {
@@ -76,7 +76,7 @@ async function _internalFetch(url: string, ref: string, options?: Options) {
 
 export async function belloFetch(url: string, ref: string, options?: Options) {
   const response = await _internalFetch(url, ref, options);
-  console.debug('[DEBUG] Final response body before return:', response.body.slice(0, 300));
+  
   return response.body;
 }
 
