@@ -1,8 +1,8 @@
 const animeConfig = {
     PORT: 3001,
     baseUrl: {
-        otakudesu: "https://otakudesu.best/",
-        samehadaku: "https://v1.samehadaku.how/",
+        otakudesu: "https://samehadaku.li/",
+        samehadaku: "https://otakudesu.blog/",
     },
     response: {
         href: true,
